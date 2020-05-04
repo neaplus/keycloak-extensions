@@ -6,8 +6,7 @@ import org.keycloak.authentication.RequiredActionProvider;
 import org.keycloak.models.UserModel;
 import utils.LogMe;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class AnalyticsRequiredActionProvider implements RequiredActionProvider {
 
@@ -17,6 +16,7 @@ public class AnalyticsRequiredActionProvider implements RequiredActionProvider {
     private static final String LAST_LOGIN = "analytics.last_login";
     private static final String TOTAL_LOGIN = "analytics.total_login";
     private static final String LOGIN_SOURCE = "analytics.login_source";
+    private static final String CLIENTS = "clients";
 
     @Override
     public void close() {
@@ -56,7 +56,22 @@ public class AnalyticsRequiredActionProvider implements RequiredActionProvider {
             }
         }
 
-        user.removeRequiredAction(AnalyticsRequiredActionFactory.PROVIDER_ID);
+        // clients csv
+        List<String> clients = user.getAttribute(CLIENTS);
+        if (clients == null || clients.isEmpty() || clients.size() == 0) {
+            user.setAttribute(CLIENTS, Collections.singletonList(source));
+        } else {
+            clients = new ArrayList<String>(Arrays.asList(clients.get(0).split(",")));
+            if (!clients.contains(source)) {
+                clients.add(source);
+                clients = new ArrayList<>(new LinkedHashSet<>(clients));
+                user.setAttribute(CLIENTS, Collections.singletonList(String.join(",", clients)));
+            }
+        }
+
+        if (user.getRequiredActions().contains(AnalyticsRequiredActionFactory.PROVIDER_ID)) {
+            user.removeRequiredAction(AnalyticsRequiredActionFactory.PROVIDER_ID);
+        }
     }
 
     @Override
