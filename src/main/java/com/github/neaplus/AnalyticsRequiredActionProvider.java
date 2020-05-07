@@ -24,11 +24,10 @@ public class AnalyticsRequiredActionProvider implements RequiredActionProvider {
 
     @Override
     public void evaluateTriggers(RequiredActionContext context) {
-        LogMe.echo(LOG, "AnalyticsRequiredActionProvider::evaluateTriggers");
 
         UserModel user = context.getUser();
-
         String now = String.valueOf(System.currentTimeMillis());
+        LogMe.echo(LOG, String.format("Analytics Check: %s", context.getUser().getId()));
 
         List<String> firstLogin = user.getAttribute(FIRST_LOGIN);
         if (firstLogin == null || firstLogin.isEmpty()) {
@@ -67,6 +66,7 @@ public class AnalyticsRequiredActionProvider implements RequiredActionProvider {
                 clients = new ArrayList<>(new LinkedHashSet<>(clients));
                 user.setAttribute(CLIENTS, Collections.singletonList(String.join(",", clients)));
             }
+            // user.setAttribute(LOGIN_SOURCE, clients);
         }
 
         if (user.getRequiredActions().contains(AnalyticsRequiredActionFactory.PROVIDER_ID)) {
